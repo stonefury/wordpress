@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Decompress WPBackup file, and enable relocate. Access from URL/wp-login.php first time, then disable
+# this line again when your site is up.
+if [ -f $WORDPRESS_BACKWPUP_TGZ ]; then
+	tar -xvf $WORDPRESS_BACKWPUP_TGZ -C /var/www/html
+	cd /var/www/html
+	sed -i "s_#define('RELOCATE', true);_define('RELOCATE', true);_" wp-config.php
+	cd -
+fi
+
 if [ -z "$MYSQL_PORT_3306_TCP" ]; then
 	echo >&2 'error: missing MYSQL_PORT_3306_TCP environment variable'
 	echo >&2 '  Did you forget to --link some_mysql_container:mysql ?'
@@ -116,6 +125,8 @@ if (!$mysql->query('CREATE DATABASE IF NOT EXISTS `' . $mysql->real_escape_strin
 
 $mysql->close();
 EOPHP
+
+
 
 chown -R www-data:www-data .
 
